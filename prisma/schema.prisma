@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  name     String  @db.VarChar(45)
+  email    String  @unique @db.VarChar(45)
+  admin    Boolean @default(false)
+  password String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  schedules Schedule[]
+
+  @@map("users")
+}
+
+model Address {
+  id Int @id @default(autoincrement())
+
+  street  String @db.VarChar(45)
+  zipCode String @map("zip_code") @db.VarChar(45)
+  number  Int
+  city    String @db.VarChar(20)
+  state   String @db.VarChar(2)
+
+  realEstate RealEstate?
+
+  @@map("addresses")
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+
+  name        String       @unique @db.VarChar(45)
+  realEstates RealEstate[]
+
+  @@map("categories")
+}
+
+model RealEstate {
+  id Int @id @default(autoincrement())
+
+  sold  Boolean @default(false)
+  value Decimal @db.Decimal(12, 2)
+  size  Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  addressId Int     @unique
+  address   Address @relation(fields: [addressId], references: [id])
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  schedules Schedule[]
+
+  @@map("real_estates")
+}
+
+model Schedule {
+  id Int @id @default(autoincrement())
+
+  date DateTime @db.Date()
+  time DateTime @db.Time()
+
+  realEstateId Int
+  realEstate   RealEstate @relation(fields: [realEstateId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@map("schedules")
+}

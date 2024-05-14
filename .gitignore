@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*lock*
+.vscode
+
+.env
+.env.dev*
+.env.test
+.env.prod*
