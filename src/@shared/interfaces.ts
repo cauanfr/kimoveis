@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 // FilterNotStartingWith -> filtra todos os atributos que não comecem com uma certa string:
 // Exemplo: "FilterNotStartingWith<keyof PrismaClient, "$">;"
@@ -20,7 +20,7 @@ type PrismaClientKeys = FilterNotStartingWith<keyof PrismaClient, "$">;
 type PrismaClientGeneric = UnionToIntersection<PrismaClient[PrismaClientKeys]>;
 
 type DynamicParamsIdFinder = {
-  searchKey: `${PrismaClientKeys}Id` | string & {};
+  searchKey: `${PrismaClientKeys}Id` | (string & {});
   error: string;
   model: PrismaClientKeys;
 };

@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { User, Prisma } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { prisma } from "../../../prisma";
 import {
@@ -16,12 +16,24 @@ export async function userCreateService(data: UserCreate): Promise<UserReturn> {
   return userReturnSchema.parse(newUser);
 }
 
-export async function userReadService(): Promise<UserReturnAll> {
-  const allUsers = await prisma.user.findMany({
+export async function userReadService(email?: string): Promise<UserReturnAll> {
+  const baseWhereClause: Prisma.UserFindManyArgs = {
     where: { deletedAt: { equals: null } },
-  });
+  };
 
+  if (email) {
+    baseWhereClause.where = { ...baseWhereClause.where, email };
+    const allUsers = await prisma.user.findMany(baseWhereClause);
+
+    return { data: userReturnSchema.array().parse(allUsers) };
+  }
+
+  const allUsers = await prisma.user.findMany(baseWhereClause);
   return { data: userReturnSchema.array().parse(allUsers) };
+}
+
+export async function userRetrieveService(user: User) {
+  return userReturnSchema.parse(user);
 }
 
 export async function userUpdatePartialService(

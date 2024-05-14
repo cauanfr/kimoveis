@@ -10,9 +10,10 @@ import {
   userCreateController,
   userDeleteController,
   userReadController,
+  userRetrieveController,
   userUpdatePartialController,
 } from "./controllers";
-import { isEmailUnique } from "./middlewares";
+import { isAdminOrOwner, isEmailUnique } from "./middlewares";
 import { userCreateSchema, userUpdateSchema } from "./schemas";
 
 export const userRouter = Router();
@@ -30,11 +31,12 @@ userRouter.post(
   userCreateController
 );
 
-userRouter.use("*", validToken);
+userRouter.use("", validToken);
 
 userRouter.get("", isAdmin, userReadController);
+userRouter.get("/profile", userRetrieveController);
 
-userRouter.use("/:userId", paramsIdExists(paramsIdConfig));
+userRouter.use("/:userId", isAdminOrOwner, paramsIdExists(paramsIdConfig));
 
 userRouter.patch(
   "/:userId",
