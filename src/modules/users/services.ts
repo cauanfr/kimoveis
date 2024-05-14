@@ -17,7 +17,10 @@ export async function userCreateService(data: UserCreate): Promise<UserReturn> {
 }
 
 export async function userReadService(): Promise<UserReturnAll> {
-  const allUsers = await prisma.user.findMany();
+  const allUsers = await prisma.user.findMany({
+    where: { deletedAt: { equals: null } },
+  });
+
   return { data: userReturnSchema.array().parse(allUsers) };
 }
 
@@ -35,5 +38,5 @@ export async function userUpdatePartialService(
 }
 
 export async function userDeleteService({ id }: User): Promise<void> {
-  await prisma.user.delete({ where: { id } });
+  await prisma.user.update({ where: { id }, data: { deletedAt: new Date() } });
 }
