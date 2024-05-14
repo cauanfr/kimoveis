@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { baseSchema } from "../../@shared";
+import { z } from "zod";
 
 export const userSchema = baseSchema.extend({
   name: z.string().min(1).max(45),

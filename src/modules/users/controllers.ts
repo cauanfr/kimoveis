@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import {
   userCreateService,
   userDeleteService,
-  userUpdatePartialService,
   userReadService,
+  userUpdatePartialService,
 } from "./services";
 
 export async function userCreateController(req: Request, res: Response) {

@@ -1,8 +1,10 @@
 import { Router } from "express";
 import {
   DynamicParamsIdFinder,
+  isAdmin,
   paramsIdExists,
   validBody,
+  validToken,
 } from "../../@shared";
 import {
   userCreateController,
@@ -28,7 +30,9 @@ userRouter.post(
   userCreateController
 );
 
-userRouter.get("", userReadController);
+userRouter.use("*", validToken);
+
+userRouter.get("", isAdmin, userReadController);
 
 userRouter.use("/:userId", paramsIdExists(paramsIdConfig));
 
