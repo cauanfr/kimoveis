@@ -1,13 +1,24 @@
+import { User } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
+import { verify } from "jsonwebtoken";
 import { AnyZodObject } from "zod";
 import { prisma } from "../../prisma";
-import { ForbiddenError, NotFoundError, UnauthorizedError } from "../errors";
-import { DynamicParamsIdFinder, PrismaClientGeneric } from "./interfaces";
-import { verify } from "jsonwebtoken";
-import { User } from "@prisma/client";
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../errors";
+import {
+  DynamicParamsIdFinder,
+  DynamicUniqueFieldFinder,
+  PrismaClientGeneric,
+  PrismaClientKeys,
+  PrismaUniqueWhereClauseDynamic,
+} from "./interfaces";
 
 export function validBody(schema: AnyZodObject) {
-  return function (req: Request, _res: Response, next: NextFunction) {
+  return function (req: Request, _res: Response, next: NextFunction): void {
     req.body = schema.parse(req.body);
     return next();
   };
@@ -18,7 +29,11 @@ export function paramsIdExists({
   model,
   searchKey,
 }: DynamicParamsIdFinder) {
-  return async function (req: Request, res: Response, next: NextFunction) {
+  return async function (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const id = Number(req.params[searchKey]);
     const client = prisma[model] as PrismaClientGeneric;
 
@@ -36,7 +51,7 @@ export async function validToken(
   req: Request,
   res: Response,
   next: NextFunction
-) {
+): Promise<void> {
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -69,7 +84,7 @@ export async function isAdmin(
   _req: Request,
   res: Response,
   next: NextFunction
-) {
+): Promise<void> {
   const foundSubject = res.locals.foundSubject as User;
 
   if (!foundSubject.admin) {
@@ -77,4 +92,26 @@ export async function isAdmin(
   }
 
   return next();
+}
+
+export function isUnique({
+  error,
+  field,
+  model,
+}: DynamicUniqueFieldFinder<PrismaClientKeys>) {
+  return async function (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const key = req.body[field] as string;
+    const client = prisma[model] as PrismaClientGeneric;
+    const where = { [field]: key } as unknown as PrismaUniqueWhereClauseDynamic;
+
+    const foundUnique = await client.findUnique({ where });
+
+    if (foundUnique) throw new ConflictError(error);
+
+    return next();
+  };
 }

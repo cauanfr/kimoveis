@@ -1,4 +1,4 @@
-import { User, Prisma } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { prisma } from "../../../prisma";
 import {
@@ -32,7 +32,7 @@ export async function userReadService(email?: string): Promise<UserReturnAll> {
   return { data: userReturnSchema.array().parse(allUsers) };
 }
 
-export async function userRetrieveService(user: User) {
+export async function userRetrieveService(user: User): Promise<UserReturn> {
   return userReturnSchema.parse(user);
 }
 

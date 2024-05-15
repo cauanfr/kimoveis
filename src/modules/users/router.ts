@@ -1,7 +1,9 @@
 import { Router } from "express";
 import {
   DynamicParamsIdFinder,
+  DynamicUniqueFieldFinder,
   isAdmin,
+  isUnique,
   paramsIdExists,
   validBody,
   validToken,
@@ -13,7 +15,7 @@ import {
   userRetrieveController,
   userUpdatePartialController,
 } from "./controllers";
-import { isAdminOrOwner, isEmailUnique } from "./middlewares";
+import { isAdminOrOwner } from "./middlewares";
 import { userCreateSchema, userUpdateSchema } from "./schemas";
 
 export const userRouter = Router();
@@ -24,10 +26,16 @@ const paramsIdConfig: DynamicParamsIdFinder = {
   searchKey: "userId",
 };
 
+const uniqueEmailConfig: DynamicUniqueFieldFinder<"user"> = {
+  error: "E-mail already exists.",
+  field: "email",
+  model: "user",
+};
+
 userRouter.post(
   "/register",
   validBody(userCreateSchema),
-  isEmailUnique,
+  isUnique(uniqueEmailConfig),
   userCreateController
 );
 
@@ -41,7 +49,7 @@ userRouter.use("/:userId", isAdminOrOwner, paramsIdExists(paramsIdConfig));
 userRouter.patch(
   "/:userId",
   validBody(userUpdateSchema),
-  isEmailUnique,
+  isUnique(uniqueEmailConfig),
   userUpdatePartialController
 );
 

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const userSchema = baseSchema.extend({
   name: z.string().min(1).max(45),
-  email: z.string().email().min(1).max(45),
+  email: z.string().email().min(1).max(45).toLowerCase(),
   admin: z.boolean().default(false),
   password: z.string().min(1),
 
